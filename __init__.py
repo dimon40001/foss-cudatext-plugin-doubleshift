@@ -20,11 +20,24 @@ shift_command_text = ""
 ctrl_command_id = cmds.cmd_DialogCommands
 ctrl_command_text = "opened file:"
 
-prior_hotkey_time = None
-prior_hotkey = None
+prior_hotkey_pressed_time = None
+prior_hotkey_pressed = None
+first_release_happened = False
+first_press_happened = False
 
 
 class Command:
+
+    def reset_state(self):
+        global prior_hotkey_pressed
+        global prior_hotkey_pressed_time
+        global first_release_happened
+        global first_press_happened
+
+        prior_hotkey_pressed_time = time.time() - TEN_MINUTES
+        prior_hotkey_pressed = None
+        first_release_happened = False
+        first_press_happened = False
 
     def __init__(self):
         global delay_ms
@@ -32,8 +45,6 @@ class Command:
         global shift_command_text
         global ctrl_command_id
         global ctrl_command_text
-
-        global prior_hotkey_time
 
         delay_ms = int(ini_read(fn_config, CONFIG_SECTION, DELAY_MS_KEY, str(delay_ms)))
 
@@ -43,7 +54,7 @@ class Command:
         ctrl_command_id = int(ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_ID_KEY, str(ctrl_command_id)))
         ctrl_command_text = ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT_KEY, ctrl_command_text)
 
-        prior_hotkey_time = time.time() - TEN_MINUTES
+        self.reset_state()
 
     def config(self):
         ini_write(fn_config, CONFIG_SECTION, DELAY_MS_KEY, str(delay_ms))
@@ -63,24 +74,41 @@ class Command:
         except:
             pass
 
+    def on_key(self, ed_self, key, state):
+        global prior_hotkey_pressed_time
+        global prior_hotkey_pressed
+        global first_release_happened
+        global first_press_happened
+
+        if key != VK_CONTROL and key != VK_SHIFT:
+            return
+        if key != prior_hotkey_pressed:
+            self.reset_state()
+
+        # CudaText emits on_key() events for pressed-and-hold key
+        # in such a way, that there are "presses" without the releases
+        # this check handles that
+        if not first_press_happened:
+            first_press_happened = True
+            prior_hotkey_pressed = key
+            prior_hotkey_pressed_time = time.time()
+
     def on_key_up(self, ed_self, key, state):
-        global prior_hotkey_time
-        global delay_ms
-        global prior_hotkey
+        global prior_hotkey_pressed_time
+        global prior_hotkey_pressed
+        global first_release_happened
 
         if key != VK_CONTROL and key != VK_SHIFT:
             return
 
-        if key != prior_hotkey:
-            prior_hotkey = key
-            prior_hotkey_time = time.time()
-            return
+        if first_release_happened:
+            ms_since_prior_hotkey_press = (time.time() - prior_hotkey_pressed_time) * 1000
 
-        ms_since_prior_hotkey = (time.time() - prior_hotkey_time) * 1000
-        prior_hotkey_time = time.time()
-
-        if ms_since_prior_hotkey < delay_ms:
-            if key == VK_SHIFT:
-                ed.cmd(shift_command_id, shift_command_text)
-            elif key == VK_CONTROL:
-                ed.cmd(ctrl_command_id, ctrl_command_text)
+            self.reset_state()
+            if ms_since_prior_hotkey_press < delay_ms:
+                if key == VK_SHIFT:
+                    ed.cmd(shift_command_id, shift_command_text)
+                elif key == VK_CONTROL:
+                    ed.cmd(ctrl_command_id, ctrl_command_text)
+        else:
+            first_release_happened = True
