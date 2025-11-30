@@ -10,11 +10,9 @@ SHIFT_CMD_ID_KEY = 'shift_command_id'
 SHIFT_CMD_TEXT_KEY = 'shift_command_text'
 CTRL_CMD_ID_KEY = 'ctrl_command_id'
 CTRL_CMD_TEXT_KEY = 'ctrl_command_text'
-TEN_MINUTES = 600 
+TEN_MINUTES = 600
 
 fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'plugins.ini')
-
-
 
 delay_ms = 200
 shift_command_id = cmds.cmd_DialogCommands
@@ -24,6 +22,7 @@ ctrl_command_text = "opened file:"
 
 prior_hotkey_time = None
 prior_hotkey = None
+
 
 class Command:
 
@@ -35,15 +34,15 @@ class Command:
         global ctrl_command_text
 
         global prior_hotkey_time
-        
+
         delay_ms = int(ini_read(fn_config, CONFIG_SECTION, DELAY_MS_KEY, str(delay_ms)))
 
         shift_command_id = int(ini_read(fn_config, CONFIG_SECTION, SHIFT_CMD_ID_KEY, str(shift_command_id)))
         shift_command_text = ini_read(fn_config, CONFIG_SECTION, SHIFT_CMD_TEXT_KEY, shift_command_text)
 
-        ctrl_command_id = int(ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_ID, STR(ctrl_command_id)))
-        ctrl_command_text = ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT, ctrl_command_text)
-        
+        ctrl_command_id = int(ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_ID_KEY, str(ctrl_command_id)))
+        ctrl_command_text = ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT_KEY, ctrl_command_text)
+
         prior_hotkey_time = time.time() - TEN_MINUTES
 
     def config(self):
@@ -52,21 +51,20 @@ class Command:
         ini_write(fn_config, CONFIG_SECTION, SHIFT_CMD_ID_KEY, str(shift_command_id))
         ini_write(fn_config, CONFIG_SECTION, SHIFT_CMD_TEXT_KEY, shift_command_text)
 
-        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_ID, str(ctrl_command_id))
-        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT, ctrl_command_text)
+        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_ID_KEY, str(ctrl_command_id))
+        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT_KEY, ctrl_command_text)
+
+        file_open(fn_config)
 
         lines = [ed.get_text_line(i) for i in range(ed.get_line_count())]
         try:
             index = lines.index('[' + CONFIG_SECTION + ']')
             ed.set_caret(0, index)
         except:
-            pass  
-
-        file_open(fn_config)
+            pass
 
     def on_key_up(self, ed_self, key, state):
         global prior_hotkey_time
-        global call_counter
         global delay_ms
         global prior_hotkey
 
@@ -83,7 +81,6 @@ class Command:
 
         if ms_since_prior_hotkey < delay_ms:
             if key == VK_SHIFT:
-                ed.cmd(shift_command_id, shift_command_text)  
+                ed.cmd(shift_command_id, shift_command_text)
             elif key == VK_CONTROL:
-                ed.cmd(ctrl_command_id, ctrl_command_text)  
-                
+                ed.cmd(ctrl_command_id, ctrl_command_text)
