@@ -20,7 +20,7 @@ Implementation based on `on_key_up()` event functionality.
 
 To manage own settings plugin creates `double_shift` section in the `plugins.ini`
 
-Default configuration:
+Configuration:
 ```
 [double_shift]
 

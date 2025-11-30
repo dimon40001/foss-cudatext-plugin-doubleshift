@@ -2,18 +2,24 @@ import os
 import time
 from cudatext import *
 from cudatext_keys import *
-from cudax_lib import get_translation
+import cudatext_cmd as cmds
 
-_ = get_translation(__file__) # I18N
+CONFIG_SECTION = 'double_shift'
+DELAY_MS_KEY = "delay_ms"
+SHIFT_CMD_ID_KEY = 'shift_command_id'
+SHIFT_CMD_TEXT_KEY = 'shift_command_text'
+CTRL_CMD_ID_KEY = 'ctrl_command_id'
+CTRL_CMD_TEXT_KEY = 'ctrl_command_text'
+TEN_MINUTES = 600 
 
 fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'plugins.ini')
 
-COMMAND_PALETTE_COMMAND_CODE = 2582
 
-delay_ms = 300
-shift_command_id = COMMAND_PALETTE_COMMAND_CODE
+
+delay_ms = 200
+shift_command_id = cmds.cmd_DialogCommands
 shift_command_text = ""
-ctrl_command_id = COMMAND_PALETTE_COMMAND_CODE
+ctrl_command_id = cmds.cmd_DialogCommands
 ctrl_command_text = "opened file:"
 
 prior_hotkey_time = None
@@ -30,26 +36,31 @@ class Command:
 
         global prior_hotkey_time
         
-        delay_ms = int(ini_read(fn_config, 'double_shift', 'delay_ms', str(delay_ms)))
+        delay_ms = int(ini_read(fn_config, CONFIG_SECTION, DELAY_MS_KEY, str(delay_ms)))
 
-        shift_command_id = int(ini_read(fn_config, 'double_shift', 'shift_command_id', str(shift_command_id)))
-        shift_command_text = ini_read(fn_config, 'double_shift', 'shift_command_text', shift_command_text)
+        shift_command_id = int(ini_read(fn_config, CONFIG_SECTION, SHIFT_CMD_ID_KEY, str(shift_command_id)))
+        shift_command_text = ini_read(fn_config, CONFIG_SECTION, SHIFT_CMD_TEXT_KEY, shift_command_text)
 
-        ctrl_command_id = int(ini_read(fn_config, 'double_shift', 'ctrl_command_id', str(ctrl_command_id)))
-        ctrl_command_text = ini_read(fn_config, 'double_shift', 'ctrl_command_text', ctrl_command_text)
-
+        ctrl_command_id = int(ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_ID, STR(ctrl_command_id)))
+        ctrl_command_text = ini_read(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT, ctrl_command_text)
         
-        ten_minutes = 600 
-        prior_hotkey_time = time.time() - ten_minutes
+        prior_hotkey_time = time.time() - TEN_MINUTES
 
     def config(self):
-        ini_write(fn_config, 'double_shift', 'delay_ms', str(delay_ms))
+        ini_write(fn_config, CONFIG_SECTION, DELAY_MS_KEY, str(delay_ms))
 
-        ini_write(fn_config, 'double_shift', 'shift_command_id', str(shift_command_id))
-        ini_write(fn_config, 'double_shift', 'shift_command_text', shift_command_text)
+        ini_write(fn_config, CONFIG_SECTION, SHIFT_CMD_ID_KEY, str(shift_command_id))
+        ini_write(fn_config, CONFIG_SECTION, SHIFT_CMD_TEXT_KEY, shift_command_text)
 
-        ini_write(fn_config, 'double_shift', 'ctrl_command_id', str(ctrl_command_id))
-        ini_write(fn_config, 'double_shift', 'ctrl_command_text', ctrl_command_text)
+        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_ID, str(ctrl_command_id))
+        ini_write(fn_config, CONFIG_SECTION, CTRL_CMD_TEXT, ctrl_command_text)
+
+        lines = [ed.get_text_line(i) for i in range(ed.get_line_count())]
+        try:
+            index = lines.index('[' + CONFIG_SECTION + ']')
+            ed.set_caret(0, index)
+        except:
+            pass  
 
         file_open(fn_config)
 
