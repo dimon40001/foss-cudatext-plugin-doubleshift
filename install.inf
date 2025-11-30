@@ -1,0 +1,17 @@
+[info]
+title=Double-Shift
+desc=Double-shift and double-ctrl hotkeys work similar to JetBrains Intellij "Search Everywhere"
+type=cudatext-plugin
+subdir=cuda_double_shift
+homepage=https://github.com/dimon40001
+
+[item1]
+section=events
+events=on_key_up
+
+[item100]
+section=commands
+caption=Double-Shift\Config
+method=config
+menu=o
+
