@@ -2,7 +2,7 @@
 
 Double-Shift hotkeys for CudaText text editor. Behavior similar to JetBrains "Search Everywhere" function. 
 
-Implementation based on `on_key_up()` event functionality.
+Implementation based on `on_key()` event functionality.
 
 ## Installation option:
 

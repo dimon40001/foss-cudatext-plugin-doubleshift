@@ -22,6 +22,7 @@ ctrl_command_text = "opened file:"
 
 prior_hotkey_time = None
 prior_hotkey = None
+activated = False
 
 
 class Command:
@@ -63,24 +64,39 @@ class Command:
         except:
             pass
 
-    def on_key_up(self, ed_self, key, state):
+    def on_key(self, ed_self, key, state):
         global prior_hotkey_time
         global delay_ms
         global prior_hotkey
+        global activated
+
+        app_log(LOG_ADD, str(key), "")
+        if activated:
+            app_log(LOG_ADD, "no processing", "")
+            return False
 
         if key != VK_CONTROL and key != VK_SHIFT:
+            app_log(LOG_ADD, "clearing " + str(key), "")
+            prior_hotkey = None
+            activated = False
             return
 
         if key != prior_hotkey:
             prior_hotkey = key
             prior_hotkey_time = time.time()
+            activated = False
             return
 
         ms_since_prior_hotkey = (time.time() - prior_hotkey_time) * 1000
         prior_hotkey_time = time.time()
 
-        if ms_since_prior_hotkey < delay_ms:
+        if ms_since_prior_hotkey < delay_ms and not activated:
+            prior_hotkey = None
+            activated = True
             if key == VK_SHIFT:
+                app_log(LOG_ADD, "calling shift with key " + str(key), "")
                 ed.cmd(shift_command_id, shift_command_text)
+                app_log(LOG_ADD, "called shift with key " + str(key), "")
             elif key == VK_CONTROL:
                 ed.cmd(ctrl_command_id, ctrl_command_text)
+            activated = False

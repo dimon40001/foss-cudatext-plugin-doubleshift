@@ -7,7 +7,7 @@ homepage=https://github.com/dimon40001/foss-cudatext-plugin-doubleshift
 
 [item1]
 section=events
-events=on_key_up
+events=on_key
 
 [item100]
 section=commands
